@@ -1,0 +1,147 @@
+import sqlite3 from 'sqlite3';
+import { promisify } from 'util';
+import path from 'path';
+
+const dbPath = path.join(process.cwd(), 'chat.db');
+const db = new sqlite3.Database(dbPath, err => {
+  if (err) console.log('Database opening error', err);
+  else console.log('Connected to the SQLite database.');
+});
+
+export interface DbMessageRow {
+  id: number;
+  sender: string;
+  message: string;
+  timestamp: string;
+  reaction_data?: string;
+}
+
+export interface DbReactionRow {
+  id: number;
+  message_id: number;
+  emoji: string;
+  user: string;
+  timestamp: string;
+}
+
+// Promisify database methods
+const dbRun = (sql: string, params: any[] = []): Promise<sqlite3.RunResult> => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(this: sqlite3.RunResult, err: Error | null) {
+      if (err) reject(err);
+      else resolve(this);
+    });
+  });
+};
+
+const dbAll = <T>(sql: string, params: any[] = []): Promise<T[]> => {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err: Error | null, rows: T[]) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
+
+// Initialize tables
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender TEXT NOT NULL,
+      message TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS reactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      message_id INTEGER NOT NULL,
+      emoji TEXT NOT NULL,
+      user TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (message_id) REFERENCES messages (id)
+    )
+  `);
+});
+
+// Get all messages ordered by timestamp and ID ascending
+export async function getMessages(): Promise<DbMessageRow[]> {
+  return dbAll<DbMessageRow>(
+    `SELECT 
+      messages.*,
+      COALESCE(
+        json_group_array(
+          CASE 
+            WHEN reactions.id IS NOT NULL THEN
+              json_object(
+                'id', reactions.id,
+                'emoji', reactions.emoji,
+                'user', reactions.user,
+                'message_id', reactions.message_id,
+                'timestamp', reactions.timestamp
+              )
+            ELSE NULL
+          END
+        ),
+        '[]'
+      ) as reaction_data
+    FROM messages 
+    LEFT JOIN reactions ON messages.id = reactions.message_id 
+    GROUP BY messages.id 
+    ORDER BY messages.timestamp ASC, messages.id ASC`
+  );
+}
+
+// Insert a message, returns inserted message id
+export async function addMessage(message: {
+  sender: string;
+  message: string;
+  timestamp?: string;
+}): Promise<number> {
+  const result = await dbRun(
+    'INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)',
+    [message.sender, message.message, message.timestamp || new Date().toISOString()]
+  );
+  return result.lastID!;
+}
+
+// Add or remove reaction to a message
+export async function toggleReaction(
+  messageId: number,
+  emoji: string,
+  user: string
+): Promise<DbReactionRow[]> {
+  // Check if reaction exists
+  const existingReaction = await dbAll<DbReactionRow>(
+    'SELECT id FROM reactions WHERE message_id = ? AND emoji = ? AND user = ?',
+    [messageId, emoji, user]
+  );
+
+  if (existingReaction.length > 0) {
+    // Remove reaction if it exists
+    await dbRun(
+      'DELETE FROM reactions WHERE message_id = ? AND emoji = ? AND user = ?',
+      [messageId, emoji, user]
+    );
+  } else {
+    // Add new reaction
+    await dbRun(
+      'INSERT INTO reactions (message_id, emoji, user, timestamp) VALUES (?, ?, ?, ?)',
+      [messageId, emoji, user, new Date().toISOString()]
+    );
+  }
+
+  // Return updated reactions for the message
+  return getReactionsForMessage(messageId);
+}
+
+// Get all reactions for a specific message
+export async function getReactionsForMessage(
+  messageId: number
+): Promise<DbReactionRow[]> {
+  return dbAll<DbReactionRow>(
+    'SELECT id, message_id, emoji, user, timestamp FROM reactions WHERE message_id = ?',
+    [messageId]
+  );
+}

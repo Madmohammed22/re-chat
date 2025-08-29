@@ -1,0 +1,17 @@
+{
+  "name": "re-chat-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Re-chat application",
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p dist && tsc && cp src/index.html dist/ && cp src/index.css dist/ && cp dist/connectWS.js dist/",
+    "start": "http-server dist",
+    "dev": "npm run build && npm start"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^5.2.2",
+    "@types/node": "^20.5.9"
+  }
+}
