@@ -11,7 +11,7 @@ export interface ChatReaction {
   type: ChatReactionType;
 }
 
-export interface ChatMessage {
+export interface ChatMessage { // hello
   id: number;
   from: User;
   date: Date;
