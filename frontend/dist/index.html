@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="index.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    />
+    <title>WebSocket Chat</title>
+  </head>
+  <body>
+    <div class="chat-container" role="main" aria-label="Chat application">
+      <header class="chat-header">
+        <h1>Chat Room</h1>
+        <div class="online-status" aria-live="polite" aria-atomic="true">🟢 Connected</div>
+      </header>
+
+      <!-- Messages container with role="list" for accessibility -->
+      <ul id="messages" role="list" aria-live="polite" aria-relevant="additions"></ul>
+
+      <form id="form" action="" aria-label="Send message form">
+        <div class="input-container">
+          <input
+            id="input"
+            type="text"
+            autocomplete="off"
+            placeholder="Type a message..."
+            aria-label="Message input"
+            required
+            spellcheck="false"
+          />
+          <button type="submit" aria-label="Send message">
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script type="module" src="connectWS.js"></script>
+  </body>
+</html>
