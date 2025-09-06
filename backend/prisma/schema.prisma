@@ -11,6 +11,7 @@ generator client {
 model Message {
   id        Int        @id @default(autoincrement())
   sender    String
+  receiver  String
   message   String
   timestamp DateTime   @default(now())
   reactions Reaction[]

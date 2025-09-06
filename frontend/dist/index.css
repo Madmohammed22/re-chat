@@ -51,6 +51,7 @@ body {
   background: var(--bg-primary);
   border-bottom: 1px solid var(--secondary-color);
   display: flex;
+    flex-direction: row-reverse;
   justify-content: space-between;
   align-items: center;
   width: 100%;
@@ -409,3 +410,5 @@ button[type="submit"]:hover {
     padding: 1rem;
   }
 }
+
+

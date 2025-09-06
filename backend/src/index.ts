@@ -86,7 +86,7 @@ wss.on('connection', async ws => {
     // Format messages with their reactions
     const reactions = await Promise.all(messages.map(msg => db.getReactions(msg.id)));
     const messagesWithReactions = messages.map((msg, index) => formatDbMessageToChatMessage(msg, reactions[index]));
-
+    console.log('Reactions:', messagesWithReactions);
     ws.send(JSON.stringify({ 
       type: 'history', 
       messages: messagesWithReactions 
@@ -107,7 +107,7 @@ wss.on('connection', async ws => {
         const messageText: string = parsed.message;
 
         const insertedMessage = await db.addMessage(sender, messageText);
-
+        console.log(sender);
         const chatMessage: ChatMessage = {
           id: insertedMessage.id,
           from: createUser(sender),
