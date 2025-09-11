@@ -18,6 +18,7 @@ const wss = new WebSocketServer({ server });
 console.log('WebSocket server created');
 wss.on('error', (error) => {
     console.error('WebSocket server error:', error);
+    //sserver.close();
 });
 wss.on('close', () => {
     console.log('WebSocket server closed');
