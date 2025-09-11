@@ -32,6 +32,7 @@ console.log('WebSocket server created');
 
 wss.on('error', (error) => {
   console.error('WebSocket server error:', error);
+  //sserver.close();
 });
 
 wss.on('close', () => {
