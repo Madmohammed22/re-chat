@@ -40,6 +40,7 @@ export async function addMessage(sender: string, message: string): Promise<DbMes
     const newMessage = await prisma.message.create({
         data: {
             sender,
+            receiver: "", // default receiver
             message,
             timestamp: new Date()
         }
@@ -102,3 +103,5 @@ export async function closeDb() {
 export async function initDb() {
     // No-op for Prisma as it automatically handles connections
 }
+
+// DATABASE_URL="file:./dev.db"

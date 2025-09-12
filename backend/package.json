@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@fastify/static": "^6.10.2",
-    "@prisma/client": "^5.2.0",
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^17.2.2",
     "fastify": "^4.22.2",
     "ws": "^8.13.0"
   },
@@ -22,6 +23,6 @@
     "@types/node": "^20.5.9",
     "@types/ws": "^8.5.5",
     "prisma": "^5.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.9.2"
   }
 }

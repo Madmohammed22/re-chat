@@ -3,6 +3,7 @@ import fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import WebSocket, { WebSocketServer } from 'ws';
 import * as db from './db.js';
+import 'dotenv/config';
 // Emoji to ChatReactionType mapping
 const emojiToReactionType = {
     '👍': 'like',
@@ -140,7 +141,7 @@ wss.on('connection', async (ws) => {
 });
 try {
     await db.initDb();
-    const address = await app.listen({ port: 3000, host: '0.0.0.0' });
+    const address = await app.listen({ port: 4000, host: '0.0.0.0' });
     console.log(`Server listening on ${address}`);
 }
 catch (err) {
