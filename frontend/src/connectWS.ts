@@ -35,6 +35,7 @@ const ws = new WebSocket(wsUrl);
 // User management
 let currentUser = localStorage.getItem("chatUserId");
 if (!currentUser) {
+    // currentUser = "user_1";
     currentUser = "User_" + Math.random().toString(36).slice(2, 11);
     localStorage.setItem("chatUserId", currentUser);
 }
@@ -300,7 +301,7 @@ function updateReactions(messageId: string, reactions: Array<{emoji: string, use
         if (!acc[r.emoji]) {
             acc[r.emoji] = { count: 0, users: [] };
         }
-        acc[r.emoji].count++;
+        // acc[r.emoji].count++;
         acc[r.emoji].users.push(r.user);
         return acc;
     }, {} as Record<string, { count: number, users: string[] }>);

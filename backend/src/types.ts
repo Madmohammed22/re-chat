@@ -14,13 +14,13 @@ export interface ChatReaction {
 export interface ChatMessage {
   id: number;
   from: User;
-  date: Date;
+  recipient?: User;
+  date: string;
   message: string;
   status: ChatMessageStatus;
-  reactions: ChatReaction[];
   type: ChatMessageType;
+  reactions: ChatReaction[];
 }
-
 export interface HistoryMessage {
   type: 'history';
   messages: ChatMessage[];

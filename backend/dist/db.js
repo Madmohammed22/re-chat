@@ -1,27 +1,38 @@
-// I added primsma
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 export async function getMessages() {
     const messages = await prisma.message.findMany({
+        where: {
+            receiver: undefined
+        },
         orderBy: {
             timestamp: 'asc'
         }
     });
     return messages;
 }
-export async function getReactions(messageId) {
-    const reactions = await prisma.reaction.findMany({
+export async function getMessagesForUser(username) {
+    const messages = await prisma.message.findMany({
         where: {
-            messageId: messageId
-        }
+            OR: [
+                { receiver: undefined },
+                { sender: username },
+                { receiver: username }
+            ]
+        },
+        orderBy: {
+            timestamp: 'asc'
+        },
+        include: { reactions: true }
     });
-    return reactions;
+    return messages;
 }
-export async function addMessage(sender, message) {
+export async function addMessage(sender, receiver, // Fixed: Explicitly string | null
+message) {
     const newMessage = await prisma.message.create({
         data: {
             sender,
-            receiver: "", // default receiver
+            receiver: "", // Now correctly typed as string | null
             message,
             timestamp: new Date()
         }
@@ -72,12 +83,19 @@ export async function toggleReaction(messageId, emoji, username) {
     }
 }
 export async function getReactionsForMessage(messageId) {
-    return getReactions(messageId);
+    const reactions = await prisma.reaction.findMany({
+        where: {
+            messageId: messageId
+        },
+        orderBy: {
+            timestamp: 'asc'
+        }
+    });
+    return reactions;
 }
 export async function closeDb() {
     await prisma.$disconnect();
 }
 export async function initDb() {
-    // No-op for Prisma as it automatically handles connections
+    // Prisma handles connections
 }
-// DATABASE_URL="file:./dev.db"

@@ -1,5 +1,5 @@
-// I added primsma
 import { PrismaClient } from '@prisma/client'
+import { UUID } from 'crypto';
 
 const prisma = new PrismaClient()
 
@@ -7,7 +7,9 @@ export interface DbMessageRow {
     id: number;
     timestamp: Date;
     sender: string;
+    receiver: string | null;  // Match Prisma: string or null
     message: string;
+    reactions?: DbReactionRow[]; // For include
 }
 
 export interface DbReactionRow {
@@ -20,6 +22,9 @@ export interface DbReactionRow {
 
 export async function getMessages(): Promise<DbMessageRow[]> {
     const messages = await prisma.message.findMany({
+        where: {
+            receiver: undefined
+        },
         orderBy: {
             timestamp: 'asc'
         }
@@ -27,20 +32,32 @@ export async function getMessages(): Promise<DbMessageRow[]> {
     return messages;
 }
 
-export async function getReactions(messageId: number): Promise<DbReactionRow[]> {
-    const reactions = await prisma.reaction.findMany({
+export async function getMessagesForUser(username: string): Promise<DbMessageRow[]> {
+    const messages = await prisma.message.findMany({
         where: {
-            messageId: messageId
-        }
+            OR: [
+                { receiver: undefined },
+                { sender: username },
+                { receiver: username }
+            ]
+        },
+        orderBy: {
+            timestamp: 'asc'
+        },
+        include: { reactions: true }
     });
-    return reactions;
+    return messages;
 }
 
-export async function addMessage(sender: string, message: string): Promise<DbMessageRow> {
+export async function addMessage(
+    sender: string, 
+    receiver: string | undefined,  // Fixed: Explicitly string | null
+    message: string
+): Promise<DbMessageRow> {
     const newMessage = await prisma.message.create({
         data: {
             sender,
-            receiver: "", // default receiver
+            receiver : "",  // Now correctly typed as string | null
             message,
             timestamp: new Date()
         }
@@ -93,7 +110,15 @@ export async function toggleReaction(messageId: number, emoji: string, username:
 }
 
 export async function getReactionsForMessage(messageId: number): Promise<DbReactionRow[]> {
-    return getReactions(messageId);
+    const reactions = await prisma.reaction.findMany({
+        where: {
+            messageId: messageId
+        },
+        orderBy: {
+            timestamp: 'asc'
+        }
+    });
+    return reactions;
 }
 
 export async function closeDb() {
@@ -101,7 +126,4 @@ export async function closeDb() {
 }
 
 export async function initDb() {
-    // No-op for Prisma as it automatically handles connections
 }
-
-// DATABASE_URL="file:./dev.db"

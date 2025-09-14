@@ -12,19 +12,21 @@ generator client {
 model Message {
   id        Int        @id @default(autoincrement())
   sender    String
-  receiver  String
+  receiver  String?    // Optional: undefined/null for group messages, username for DMs
   message   String
   timestamp DateTime   @default(now())
   reactions Reaction[]
+
+  @@index([receiver])  // For efficient DM queries
 }
 
 model Reaction {
   id        Int      @id @default(autoincrement())
   messageId Int
-  emoji    String
-  user     String
+  emoji     String
+  user      String
   timestamp DateTime @default(now())
-  message   Message  @relation(fields: [messageId], references: [id])
+  message   Message   @relation(fields: [messageId], references: [id])
 
   @@index([messageId])
 }
