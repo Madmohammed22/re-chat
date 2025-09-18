@@ -147,7 +147,7 @@ async function publishToRabbitMQ(payload: any, isDM: boolean = false, recipient?
     }
   }
 }
-
+//  If something goes wrong with RabbitMQ, we still want to serve clients
 wss.on('error', (error) => {
   console.error('WebSocket server error:', error);
 });

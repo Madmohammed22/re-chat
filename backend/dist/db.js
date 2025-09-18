@@ -97,5 +97,4 @@ export async function closeDb() {
     await prisma.$disconnect();
 }
 export async function initDb() {
-    // Prisma handles connections
 }
